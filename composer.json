@@ -1,0 +1,41 @@
+{
+  "name": "felixarntz/plugin-check",
+  "type": "wordpress-plugin",
+  "license": "GPL-2.0-or-later",
+  "description": "A simple and easy way to test your plugin for all the latest WordPress standards and practices. A great plugin development tool!",
+  "homepage": "https://github.com/felixarntz/plugin-check/",
+  "keywords": [
+    "plugin check",
+    "wordpress"
+  ],
+  "support": {
+    "issues": "https://github.com/felixarntz/plugin-check/issues"
+  },
+  "require-dev": {
+    "dealerdirect/phpcodesniffer-composer-installer": "^0.7",
+    "phpcompatibility/php-compatibility": "^9.3",
+    "phpunit/phpunit": "^8.5",
+    "squizlabs/php_codesniffer": "^3.5",
+    "wp-coding-standards/wpcs": "^2.2",
+    "wp-phpunit/wp-phpunit": "^5.8",
+    "yoast/phpunit-polyfills": "^1.0"
+  },
+  "require": {
+    "composer/installers": "~1.0"
+  },
+  "scripts": {
+    "format": "phpcbf --standard=phpcs.xml.dist --report-summary --report-source",
+    "lint": "phpcs --standard=phpcs.xml.dist"
+  },
+  "config": {
+    "allow-plugins": {
+      "dealerdirect/phpcodesniffer-composer-installer": true,
+      "composer/installers": true
+    }
+  },
+  "autoload": {
+    "psr-4": {
+      "WordPress\\Plugin_Check\\": "inc"
+    }
+  }
+}
