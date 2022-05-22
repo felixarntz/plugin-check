@@ -35,7 +35,7 @@ function wp_plugin_check_load() {
 	}
 
 	$class_name = 'WordPress\\Plugin_Check\\Plugin_Main';
-	$instance = new $class_name( __FILE__ );
+	$instance   = new $class_name( __FILE__ );
 	$instance->add_hooks();
 }
 
