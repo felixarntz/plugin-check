@@ -90,28 +90,21 @@ class Checks {
 	 * @throws Exception Thrown when preparation fails.
 	 */
 	protected function prepare() {
-		require_once ABSPATH . 'wp-admin/includes/plugin.php';
+		$preparations = array(
+			new Preparations\Activate_Plugin_Preparation( $this->plugin_context->basename() ),
+		);
 
-		$basename = $this->plugin_context->basename();
+		$cleanups = array_map(
+			function( Preparation $preparation ) {
+				return $preparation->prepare();
+			},
+			$preparations
+		);
 
-		// Activate plugin if not active yet.
-		if ( ! is_plugin_active( $basename ) ) {
-			$result = activate_plugin( $basename, '', false, true );
-			if ( is_wp_error( $result ) ) {
-				throw new Exception(
-					sprintf(
-						/* translators: %s: WP error message */
-						__( 'Could not activate plugin: %s', 'plugin-check' ),
-						$result->get_error_message()
-					)
-				);
+		return function() use ( $cleanups ) {
+			foreach ( $cleanups as $cleanup ) {
+				$cleanup();
 			}
-			return function() use ( $basename ) {
-				deactivate_plugins( array( $basename ), true );
-			};
-		}
-
-		// Otherwise do nothing and return no-op cleanup function.
-		return function() {};
+		};
 	}
 }
