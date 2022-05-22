@@ -11,17 +11,17 @@
   "support": {
     "issues": "https://github.com/felixarntz/plugin-check/issues"
   },
+  "require": {
+    "composer/installers": "~1.0",
+    "squizlabs/php_codesniffer": "^3.5",
+    "wp-coding-standards/wpcs": "^2.2"
+  },
   "require-dev": {
     "dealerdirect/phpcodesniffer-composer-installer": "^0.7",
     "phpcompatibility/php-compatibility": "^9.3",
     "phpunit/phpunit": "^8.5",
-    "squizlabs/php_codesniffer": "^3.5",
-    "wp-coding-standards/wpcs": "^2.2",
     "wp-phpunit/wp-phpunit": "^5.8",
     "yoast/phpunit-polyfills": "^1.0"
-  },
-  "require": {
-    "composer/installers": "~1.0"
   },
   "scripts": {
     "format": "phpcbf --standard=phpcs.xml.dist --report-summary --report-source",
@@ -35,7 +35,7 @@
   },
   "autoload": {
     "psr-4": {
-      "WordPress\\Plugin_Check\\": "inc"
+      "WordPress\\Plugin_Check\\": "includes"
     }
   }
 }
