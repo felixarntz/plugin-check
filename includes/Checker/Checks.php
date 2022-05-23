@@ -18,6 +18,14 @@ use Exception;
 class Checks {
 
 	/**
+	 * Main context instance.
+	 *
+	 * @since 1.0.0
+	 * @var Plugin_Context
+	 */
+	protected $main_context;
+
+	/**
 	 * Context for the plugin to check.
 	 *
 	 * @since 1.0.0
@@ -26,13 +34,15 @@ class Checks {
 	protected $plugin_context;
 
 	/**
-	 * Sets the main file of the plugin to check.
+	 * Sets the main context and the main file of the plugin to check.
 	 *
 	 * @since 1.0.0
 	 *
-	 * @param string $plugin_main_file Absolute path to the plugin main file.
+	 * @param Plugin_Context $main_context     Main context instance.
+	 * @param string         $plugin_main_file Absolute path to the plugin main file.
 	 */
-	public function __construct( $plugin_main_file ) {
+	public function __construct( $main_context, $plugin_main_file ) {
+		$this->main_context   = $main_context;
 		$this->plugin_context = new Plugin_Context( $plugin_main_file );
 	}
 
@@ -91,7 +101,13 @@ class Checks {
 	 */
 	protected function prepare() {
 		$preparations = array(
-			new Preparations\Activate_Plugin_Preparation( $this->plugin_context->basename() ),
+			new Preparations\Activate_Plugin_Preparation(
+				$this->plugin_context->basename()
+			),
+			new Preparations\Use_Minimal_Theme_Preparation(
+				'wp-empty-theme',
+				$this->main_context()->path( '/themes' )
+			),
 		);
 
 		$cleanups = array_map(

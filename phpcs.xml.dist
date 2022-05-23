@@ -17,7 +17,12 @@
 
 	<file>./plugin-check.php</file>
 	<file>./includes</file>
-	<file>./tests</file>
+	<file>./themes</file>
+
+	<!-- Do not apply I18n rules for test themes -->
+	<rule ref="WordPress.WP.I18n">
+		<exclude-pattern>themes/*</exclude-pattern>
+	</rule>
 
 	<!-- Do not require docblocks for unit tests -->
 	<rule ref="Squiz.Commenting.FunctionComment.Missing">
@@ -45,14 +50,6 @@
 		<exclude-pattern>tests/*</exclude-pattern>
 	</rule>
 	<rule ref="Squiz.Commenting.FunctionCommentThrowTag.Missing">
-		<exclude-pattern>tests/*</exclude-pattern>
-	</rule>
-
-	<!-- Do not apply filename rules for unit tests -->
-	<rule ref="WordPress.Files.FileName.NotHyphenatedLowercase">
-		<exclude-pattern>tests/*</exclude-pattern>
-	</rule>
-	<rule ref="WordPress.Files.FileName.InvalidClassFileName">
 		<exclude-pattern>tests/*</exclude-pattern>
 	</rule>
 
