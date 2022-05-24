@@ -23,7 +23,8 @@ interface Check {
 	 *
 	 * @param Check_Result $result The check result to amend, including the plugin context to check.
 	 *
-	 * @throws Exception Thrown when preparation fails.
+	 * @throws Exception Thrown when the check fails with a critical error (unrelated to any errors detected as part of
+	 *                   the check).
 	 */
 	public function run( Check_Result $result );
 }

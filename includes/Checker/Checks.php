@@ -62,9 +62,12 @@ class Checks {
 		$cleanup = $this->prepare();
 
 		try {
-			foreach ( $checks as $check ) {
-				$check->run( $result );
-			}
+			array_walk(
+				$checks,
+				function( Check $check ) use ( $result ) {
+					$this->run_check_with_result( $check, $result );
+				}
+			);
 		} catch ( Exception $e ) {
 			// Run clean up in case of any exception thrown from checks.
 			$cleanup();
@@ -105,7 +108,7 @@ class Checks {
 		$cleanup = $this->prepare();
 
 		try {
-			$checks[ $check_index ]->run( $result );
+			$this->run_check_with_result( $checks[ $check_index ], $result );
 		} catch ( Exception $e ) {
 			// Run clean up in case of any exception thrown from check.
 			$cleanup();
@@ -118,24 +121,34 @@ class Checks {
 	}
 
 	/**
-	 * Gets the available plugin check classes.
+	 * Runs a given check with the given result object to amend.
 	 *
 	 * @since 1.0.0
 	 *
-	 * @return array List of plugin check classes implementing the Check interface.
+	 * @param Check        $check  The check to run.
+	 * @param Check_Result $result The result object to amend.
+	 *
+	 * @throws Exception Thrown when check fails with critical error.
 	 */
-	protected function get_checks() {
-		// TODO: Implement checks.
-		$checks = array();
+	protected function run_check_with_result( Check $check, Check_Result $result ) {
+		// If $check implements Preparation interface, ensure the preparation and clean up is run.
+		if ( $check instanceof Preparation ) {
+			$cleanup = $check->prepare();
 
-		/**
-		 * Filters the available plugin check classes.
-		 *
-		 * @since 1.0.0
-		 *
-		 * @param array $checks List of plugin check classes implementing the Check interface.
-		 */
-		return apply_filters( 'wp_plugin_check_checks', $checks );
+			try {
+				$check->run( $result );
+			} catch ( Exception $e ) {
+				// Run clean up in case of any exception thrown from check.
+				$cleanup();
+				throw $e;
+			}
+
+			$cleanup();
+			return;
+		}
+
+		// Otherwise, just run the check.
+		$check->run( $result );
 	}
 
 	/**
@@ -170,5 +183,26 @@ class Checks {
 				$cleanup();
 			}
 		};
+	}
+
+	/**
+	 * Gets the available plugin check classes.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @return array List of plugin check classes implementing the Check interface.
+	 */
+	protected function get_checks() {
+		// TODO: Implement checks.
+		$checks = array();
+
+		/**
+		 * Filters the available plugin check classes.
+		 *
+		 * @since 1.0.0
+		 *
+		 * @param array $checks List of plugin check classes implementing the Check interface.
+		 */
+		return apply_filters( 'wp_plugin_check_checks', $checks );
 	}
 }
