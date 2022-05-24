@@ -51,9 +51,13 @@ class Checks {
 	 *
 	 * @since 1.0.0
 	 *
+	 * @return Check_Result Object containing all check results.
+	 *
 	 * @throws Exception Thrown when checks fail with critical error.
 	 */
 	public function run_all_checks() {
+		$result = new Check_Result();
+
 		$cleanup = $this->prepare();
 
 		try {
@@ -65,6 +69,8 @@ class Checks {
 		}
 
 		$cleanup();
+
+		return $result;
 	}
 
 	/**
@@ -73,10 +79,13 @@ class Checks {
 	 * @since 1.0.0
 	 *
 	 * @param string $check Check identifier.
+	 * @return Check_Result Object containing all check results.
 	 *
 	 * @throws Exception Thrown when check fails with critical error.
 	 */
 	public function run_single_check( $check ) {
+		$result = new Check_Result();
+
 		$cleanup = $this->prepare();
 
 		try {
@@ -88,6 +97,8 @@ class Checks {
 		}
 
 		$cleanup();
+
+		return $result;
 	}
 
 	/**
