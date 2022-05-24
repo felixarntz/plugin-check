@@ -57,11 +57,14 @@ class Checks {
 	 */
 	public function run_all_checks() {
 		$result = new Check_Result( $this->check_context );
+		$checks = $this->get_checks();
 
 		$cleanup = $this->prepare();
 
 		try {
-			// TODO: Run checks.
+			foreach ( $checks as $check ) {
+				$check->run( $result );
+			}
 		} catch ( Exception $e ) {
 			// Run clean up in case of any exception thrown from checks.
 			$cleanup();
@@ -78,18 +81,31 @@ class Checks {
 	 *
 	 * @since 1.0.0
 	 *
-	 * @param string $check Check identifier.
+	 * @param string $check Check class name.
 	 * @return Check_Result Object containing all check results.
 	 *
 	 * @throws Exception Thrown when check fails with critical error.
 	 */
 	public function run_single_check( $check ) {
 		$result = new Check_Result( $this->check_context );
+		$checks = $this->get_checks();
+
+		// Look up the check based on the $check variable.
+		$check_index = array_search( $check, $checks, true );
+		if ( false === $check_index ) {
+			throw new Exception(
+				sprintf(
+					/* translators: %s: class name */
+					__( 'Invalid check class name %s.', 'plugin-check' ),
+					$check
+				)
+			);
+		}
 
 		$cleanup = $this->prepare();
 
 		try {
-			// TODO: Run single check.
+			$checks[ $check_index ]->run( $result );
 		} catch ( Exception $e ) {
 			// Run clean up in case of any exception thrown from check.
 			$cleanup();
@@ -99,6 +115,27 @@ class Checks {
 		$cleanup();
 
 		return $result;
+	}
+
+	/**
+	 * Gets the available plugin check classes.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @return array List of plugin check classes implementing the Check interface.
+	 */
+	protected function get_checks() {
+		// TODO: Implement checks.
+		$checks = array();
+
+		/**
+		 * Filters the available plugin check classes.
+		 *
+		 * @since 1.0.0
+		 *
+		 * @param array $checks List of plugin check classes implementing the Check interface.
+		 */
+		return apply_filters( 'wp_plugin_check_checks', $checks );
 	}
 
 	/**
