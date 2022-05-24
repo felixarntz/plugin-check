@@ -15,6 +15,14 @@ namespace WordPress\Plugin_Check\Checker;
 class Check_Result {
 
 	/**
+	 * Context for the plugin to check.
+	 *
+	 * @since 1.0.0
+	 * @var Check_Context
+	 */
+	protected $check_context;
+
+	/**
 	 * List of errors.
 	 *
 	 * @since 1.0.0
@@ -45,6 +53,28 @@ class Check_Result {
 	 * @var int
 	 */
 	protected $warning_count = 0;
+
+	/**
+	 * Sets the context for the plugin to check.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @param Check_Context $check_context Check context instance for the plugin.
+	 */
+	public function __construct( $check_context ) {
+		$this->check_context = $check_context;
+	}
+
+	/**
+	 * Returns the context for the plugin to check.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @return Check_Context Plugin context instance.
+	 */
+	public function plugin() {
+		return $this->check_context;
+	}
 
 	/**
 	 * Adds an error or warning to the respective stack.

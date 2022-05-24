@@ -29,9 +29,9 @@ class Checks {
 	 * Context for the plugin to check.
 	 *
 	 * @since 1.0.0
-	 * @var Plugin_Context
+	 * @var Check_Context
 	 */
-	protected $plugin_context;
+	protected $check_context;
 
 	/**
 	 * Sets the main context and the main file of the plugin to check.
@@ -42,8 +42,8 @@ class Checks {
 	 * @param string         $plugin_main_file Absolute path to the plugin main file.
 	 */
 	public function __construct( $main_context, $plugin_main_file ) {
-		$this->main_context   = $main_context;
-		$this->plugin_context = new Plugin_Context( $plugin_main_file );
+		$this->main_context  = $main_context;
+		$this->check_context = new Check_Context( $plugin_main_file );
 	}
 
 	/**
@@ -56,7 +56,7 @@ class Checks {
 	 * @throws Exception Thrown when checks fail with critical error.
 	 */
 	public function run_all_checks() {
-		$result = new Check_Result();
+		$result = new Check_Result( $this->check_context );
 
 		$cleanup = $this->prepare();
 
@@ -84,7 +84,7 @@ class Checks {
 	 * @throws Exception Thrown when check fails with critical error.
 	 */
 	public function run_single_check( $check ) {
-		$result = new Check_Result();
+		$result = new Check_Result( $this->check_context );
 
 		$cleanup = $this->prepare();
 
@@ -113,7 +113,7 @@ class Checks {
 	protected function prepare() {
 		$preparations = array(
 			new Preparations\Activate_Plugin_Preparation(
-				$this->plugin_context->basename()
+				$this->check_context->basename()
 			),
 			new Preparations\Use_Minimal_Theme_Preparation(
 				'wp-empty-theme',
