@@ -34,6 +34,8 @@ function wp_plugin_check_load() {
 		return;
 	}
 
+	require_once plugin_dir_path( __FILE__ ) . 'vendor/autoload.php';
+
 	$class_name = 'WordPress\\Plugin_Check\\Plugin_Main';
 	$instance   = new $class_name( __FILE__ );
 	$instance->add_hooks();
