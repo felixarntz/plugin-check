@@ -167,7 +167,7 @@ class Checks {
 			),
 			new Preparations\Use_Minimal_Theme_Preparation(
 				'wp-empty-theme',
-				$this->main_context()->path( '/themes' )
+				$this->main_context->path( '/themes' )
 			),
 		);
 
