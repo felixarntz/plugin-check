@@ -7,12 +7,22 @@
 
 namespace WordPress\Plugin_Check\Checker;
 
+use WordPress\Plugin_Check\Plugin_Context;
+
 /**
  * Result for running checks on a plugin.
  *
  * @since 1.0.0
  */
 class Check_Result {
+
+	/**
+	 * Main context instance.
+	 *
+	 * @since 1.0.0
+	 * @var Plugin_Context
+	 */
+	protected $main_context;
 
 	/**
 	 * Context for the plugin to check.
@@ -59,10 +69,23 @@ class Check_Result {
 	 *
 	 * @since 1.0.0
 	 *
-	 * @param Check_Context $check_context Check context instance for the plugin.
+	 * @param Plugin_Context $main_context  Main context instance.
+	 * @param Check_Context  $check_context Check context instance for the plugin.
 	 */
-	public function __construct( $check_context ) {
+	public function __construct( Plugin_Context $main_context, Check_Context $check_context ) {
+		$this->main_context  = $main_context;
 		$this->check_context = $check_context;
+	}
+
+	/**
+	 * Returns the main context for the plugin checker.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @return Plugin_Context Main context instance.
+	 */
+	public function context() {
+		return $this->main_context;
 	}
 
 	/**
@@ -108,10 +131,10 @@ class Check_Result {
 			array_intersect_key( $args, $defaults )
 		);
 
-		$file   = $args['file'];
-		$line   = $args['line'];
-		$column = $args['column'];
-		unset( $args['line'], $args['column'] );
+		$file   = str_replace( $this->check_context->path( '/' ), '', $data['file'] );
+		$line   = $data['line'];
+		$column = $data['column'];
+		unset( $data['line'], $data['column'] );
 
 		if ( $error ) {
 			if ( ! isset( $this->errors[ $file ] ) ) {
@@ -123,7 +146,7 @@ class Check_Result {
 			if ( ! isset( $this->errors[ $file ][ $line ][ $column ] ) ) {
 				$this->errors[ $file ][ $line ][ $column ] = array();
 			}
-			$this->errors[ $file ][ $line ][ $column ][] = $args;
+			$this->errors[ $file ][ $line ][ $column ][] = $data;
 			$this->error_count++;
 		} else {
 			if ( ! isset( $this->warnings[ $file ] ) ) {
@@ -135,7 +158,7 @@ class Check_Result {
 			if ( ! isset( $this->warnings[ $file ][ $line ][ $column ] ) ) {
 				$this->warnings[ $file ][ $line ][ $column ] = array();
 			}
-			$this->warnings[ $file ][ $line ][ $column ][] = $args;
+			$this->warnings[ $file ][ $line ][ $column ][] = $data;
 			$this->warning_count++;
 		}
 	}

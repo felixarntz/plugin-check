@@ -56,7 +56,7 @@ class Checks {
 	 * @throws Exception Thrown when checks fail with critical error.
 	 */
 	public function run_all_checks() {
-		$result = new Check_Result( $this->check_context );
+		$result = new Check_Result( $this->main_context, $this->check_context );
 		$checks = $this->get_checks();
 
 		$cleanup = $this->prepare();
@@ -90,7 +90,7 @@ class Checks {
 	 * @throws Exception Thrown when check fails with critical error.
 	 */
 	public function run_single_check( $check ) {
-		$result = new Check_Result( $this->check_context );
+		$result = new Check_Result( $this->main_context, $this->check_context );
 		$checks = $this->get_checks();
 
 		// Look up the check based on the $check variable.
@@ -190,18 +190,20 @@ class Checks {
 	 *
 	 * @since 1.0.0
 	 *
-	 * @return array List of plugin check classes implementing the Check interface.
+	 * @return array List of plugin check class instances implementing the Check interface.
 	 */
 	protected function get_checks() {
 		// TODO: Implement checks.
-		$checks = array();
+		$checks = array(
+			new PHP_CodeSniffer_Check(),
+		);
 
 		/**
 		 * Filters the available plugin check classes.
 		 *
 		 * @since 1.0.0
 		 *
-		 * @param array $checks List of plugin check classes implementing the Check interface.
+		 * @param array $checks List of plugin check class instances implementing the Check interface.
 		 */
 		return apply_filters( 'wp_plugin_check_checks', $checks );
 	}
