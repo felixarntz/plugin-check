@@ -195,7 +195,7 @@ class Checks {
 	protected function get_checks() {
 		// TODO: Implement checks.
 		$checks = array(
-			new PHP_CodeSniffer_Check(),
+			new Checks\PHP_CodeSniffer_Check(),
 		);
 
 		/**

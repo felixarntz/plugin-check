@@ -1,12 +1,14 @@
 <?php
 /**
- * Class WordPress\Plugin_Check\Checker\PHP_CodeSniffer_Check
+ * Class WordPress\Plugin_Check\Checker\Checks\PHP_CodeSniffer_Check
  *
  * @package plugin-check
  */
 
-namespace WordPress\Plugin_Check\Checker;
+namespace WordPress\Plugin_Check\Checker\Checks;
 
+use WordPress\Plugin_Check\Checker\Check;
+use WordPress\Plugin_Check\Checker\Check_Result;
 use Exception;
 
 /**
