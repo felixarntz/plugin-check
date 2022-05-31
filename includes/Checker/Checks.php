@@ -196,6 +196,7 @@ class Checks {
 		// TODO: Implement checks.
 		$checks = array(
 			new Checks\PHP_CodeSniffer_Check(),
+			new Checks\Enqueued_Scripts_Check(),
 		);
 
 		/**
