@@ -39,6 +39,9 @@ class Plugin_Main {
 	 * @since 1.0.0
 	 */
 	public function add_hooks() {
-		// TODO.
+		if ( defined( 'WP_CLI' ) && WP_CLI ) {
+			$command = new CLI\Plugin_Check_Command( $this->context );
+			\WP_CLI::add_command( 'plugin-check', $command );
+		}
 	}
 }
