@@ -309,7 +309,6 @@ class Plugin_Check_Command extends WP_CLI_Command {
 				$file_name
 			)
 		);
-		WP_CLI::line( '----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------' );
 		$formatter->display_items( $file_results );
 		WP_CLI::line();
 		WP_CLI::line();
