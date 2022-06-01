@@ -161,15 +161,19 @@ class Checks {
 	 * @throws Exception Thrown when preparation fails.
 	 */
 	protected function prepare() {
+		// phpcs:disable Squiz.Commenting.BlockComment.NoNewLine
 		$preparations = array(
-			new Preparations\Activate_Plugin_Preparation(
+			// This does not really work as it is to late to initialize the plugin.
+			/*new Preparations\Activate_Plugin_Preparation(
 				$this->check_context->basename()
-			),
-			new Preparations\Use_Minimal_Theme_Preparation(
+			),*/
+			// This does not really work as it is too late to initialize the theme.
+			/*new Preparations\Use_Minimal_Theme_Preparation(
 				'wp-empty-theme',
 				$this->main_context->path( '/themes' )
-			),
+			),*/
 		);
+		// phpcs:enable Squiz.Commenting.BlockComment.NoNewLine
 
 		$cleanups = array_map(
 			function( Preparation $preparation ) {
