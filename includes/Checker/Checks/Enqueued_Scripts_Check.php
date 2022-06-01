@@ -124,7 +124,7 @@ class Enqueued_Scripts_Check extends Abstract_Request_Check {
 				}
 			}
 
-			$plugin_scripts[] = array(
+			$plugin_scripts[]    = array(
 				'path' => $script_path,
 				'size' => $script_size,
 			);
@@ -142,8 +142,8 @@ class Enqueued_Scripts_Check extends Abstract_Request_Check {
 						size_format( $this->threshold_size )
 					),
 					array(
-						'code'   => 'EnqueuedScripts',
-						'file'   => $plugin_script['path'],
+						'code' => 'EnqueuedScripts',
+						'file' => $plugin_script['path'],
 					)
 				);
 			}
