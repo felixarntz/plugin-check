@@ -40,7 +40,7 @@ class Plugin_Main {
 	 */
 	public function add_hooks() {
 		if ( defined( 'WP_CLI' ) && WP_CLI ) {
-			$command = new CLI\Plugin_Check_Command( $this->context );
+			$command = new CLI\Plugin_Check_Command( $this->context, 'plugin-check' );
 			\WP_CLI::add_command( 'plugin-check', $command );
 		}
 	}

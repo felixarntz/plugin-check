@@ -15,7 +15,7 @@ use Exception;
  *
  * @since 1.0.0
  */
-class Checks {
+class Checks implements Preparation {
 
 	/**
 	 * Main context instance.
@@ -34,6 +34,14 @@ class Checks {
 	protected $check_context;
 
 	/**
+	 * Internal flag for whether the environment is prepared.
+	 *
+	 * @since 1.0.0
+	 * @var bool
+	 */
+	protected $prepared = false;
+
+	/**
 	 * Sets the main context and the main file of the plugin to check.
 	 *
 	 * @since 1.0.0
@@ -47,6 +55,56 @@ class Checks {
 	}
 
 	/**
+	 * Gets the basename of the plugin this instance is for.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @return string Plugin basename.
+	 */
+	public function plugin_basename() {
+		return $this->check_context->basename();
+	}
+
+	/**
+	 * Prepares the environment for running checks and returns a cleanup function.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @return callable Cleanup function to revert any changes made here.
+	 *
+	 * @throws Exception Thrown when preparation fails.
+	 */
+	public function prepare() {
+		$preparations = array(
+			new Preparations\Activate_Plugin_Preparation(
+				$this->check_context->basename()
+			),
+			new Preparations\Use_Minimal_Theme_Preparation(
+				'wp-empty-theme',
+				$this->main_context->path( '/themes' )
+			),
+		);
+
+		$cleanups       = array_map(
+			function( Preparation $preparation ) {
+				return $preparation->prepare();
+			},
+			$preparations
+		);
+		$this->prepared = true;
+
+		return function() use ( $cleanups ) {
+			array_walk(
+				$cleanups,
+				function( $cleanup ) {
+					$cleanup();
+				}
+			);
+			$this->prepared = false;
+		};
+	}
+
+	/**
 	 * Runs all checks against the plugin.
 	 *
 	 * @since 1.0.0
@@ -56,25 +114,21 @@ class Checks {
 	 * @throws Exception Thrown when checks fail with critical error.
 	 */
 	public function run_all_checks() {
+		if ( ! $this->prepared ) {
+			throw new Exception(
+				__( 'Environment not prepared to run checks. The Checks::prepare() method must be called first.', 'plugin-check' )
+			);
+		}
+
 		$result = new Check_Result( $this->main_context, $this->check_context );
 		$checks = $this->get_checks();
 
-		$cleanup = $this->prepare();
-
-		try {
-			array_walk(
-				$checks,
-				function( Check $check ) use ( $result ) {
-					$this->run_check_with_result( $check, $result );
-				}
-			);
-		} catch ( Exception $e ) {
-			// Run clean up in case of any exception thrown from checks.
-			$cleanup();
-			throw $e;
-		}
-
-		$cleanup();
+		array_walk(
+			$checks,
+			function( Check $check ) use ( $result ) {
+				$this->run_check_with_result( $check, $result );
+			}
+		);
 
 		return $result;
 	}
@@ -90,6 +144,12 @@ class Checks {
 	 * @throws Exception Thrown when check fails with critical error.
 	 */
 	public function run_single_check( $check ) {
+		if ( ! $this->prepared ) {
+			throw new Exception(
+				__( 'Environment not prepared to run checks. The Checks::prepare() method must be called first.', 'plugin-check' )
+			);
+		}
+
 		$result = new Check_Result( $this->main_context, $this->check_context );
 		$checks = $this->get_checks();
 
@@ -105,17 +165,7 @@ class Checks {
 			);
 		}
 
-		$cleanup = $this->prepare();
-
-		try {
-			$this->run_check_with_result( $checks[ $check_index ], $result );
-		} catch ( Exception $e ) {
-			// Run clean up in case of any exception thrown from check.
-			$cleanup();
-			throw $e;
-		}
-
-		$cleanup();
+		$this->run_check_with_result( $checks[ $check_index ], $result );
 
 		return $result;
 	}
@@ -149,44 +199,6 @@ class Checks {
 
 		// Otherwise, just run the check.
 		$check->run( $result );
-	}
-
-	/**
-	 * Prepares the environment for running checks and returns a cleanup function.
-	 *
-	 * @since 1.0.0
-	 *
-	 * @return callable Cleanup function to revert any changes made here.
-	 *
-	 * @throws Exception Thrown when preparation fails.
-	 */
-	protected function prepare() {
-		// phpcs:disable Squiz.Commenting.BlockComment.NoNewLine
-		$preparations = array(
-			// This does not really work as it is to late to initialize the plugin.
-			/*new Preparations\Activate_Plugin_Preparation(
-				$this->check_context->basename()
-			),*/
-			// This does not really work as it is too late to initialize the theme.
-			/*new Preparations\Use_Minimal_Theme_Preparation(
-				'wp-empty-theme',
-				$this->main_context->path( '/themes' )
-			),*/
-		);
-		// phpcs:enable Squiz.Commenting.BlockComment.NoNewLine
-
-		$cleanups = array_map(
-			function( Preparation $preparation ) {
-				return $preparation->prepare();
-			},
-			$preparations
-		);
-
-		return function() use ( $cleanups ) {
-			foreach ( $cleanups as $cleanup ) {
-				$cleanup();
-			}
-		};
 	}
 
 	/**

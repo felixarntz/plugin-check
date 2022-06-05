@@ -29,14 +29,44 @@ class Plugin_Check_Command extends WP_CLI_Command {
 	protected $context;
 
 	/**
+	 * Command group name that this command is registered under.
+	 *
+	 * @since 1.0.0
+	 * @var string
+	 */
+	protected $command_group_name;
+
+	/**
+	 * Internal Checks instance to operate with.
+	 *
+	 * @since 1.0.0
+	 * @var Checks
+	 */
+	protected $checks;
+
+	/**
 	 * Constructor.
 	 *
 	 * @since 1.0.0
 	 *
-	 * @param Plugin_Context $context Plugin context.
+	 * @param Plugin_Context $context            Plugin context.
+	 * @param string         $command_group_name Optional. Command group name that this command is registered under.
+	 *                                           Default 'plugin-check'.
+	 * @param bool           $skip_prepare       Optional. Whether to skip adding command preparation hooks. Default
+	 *                                           false.
 	 */
-	public function __construct( Plugin_Context $context ) {
-		$this->context = $context;
+	public function __construct(
+		Plugin_Context $context,
+		$command_group_name = 'plugin-check',
+		$skip_prepare = false
+	) {
+		$this->context            = $context;
+		$this->command_group_name = $command_group_name;
+
+		// A bit of a hack, but when the check commands are invoked, some code needs to run early.
+		if ( ! $skip_prepare ) {
+			$this->prepare_for_commands();
+		}
 	}
 
 	/**
@@ -88,10 +118,7 @@ class Plugin_Check_Command extends WP_CLI_Command {
 			WP_CLI::error( $e->getMessage() );
 		}
 
-		$checks = new Checks(
-			$this->context,
-			WP_PLUGIN_DIR . '/' . $plugin_basename
-		);
+		$checks = $this->get_checks_instance( $plugin_basename );
 
 		if ( ! empty( $assoc_args['check'] ) ) {
 			$method      = 'run_single_check';
@@ -312,5 +339,81 @@ class Plugin_Check_Command extends WP_CLI_Command {
 		$formatter->display_items( $file_results );
 		WP_CLI::line();
 		WP_CLI::line();
+	}
+
+	/**
+	 * Prepares the environment for the commands when relevant.
+	 *
+	 * @since 1.0.0
+	 */
+	protected function prepare_for_commands() {
+		// Bail early if no command line arguments available.
+		if ( ! isset( $_SERVER['argv'] ) ) {
+			return;
+		}
+		$cmd_args = $_SERVER['argv'];
+
+		// Bail early if not at least 3 command line arguments passed.
+		if ( ! isset( $cmd_args[1], $cmd_args[2], $cmd_args[3] ) ) {
+			return;
+		}
+		$command_group = $cmd_args[1];
+		$command_name  = $cmd_args[2];
+		$plugin_slug   = $cmd_args[3];
+
+		// Bail early if the invoked command does not belong to this class.
+		if ( $command_group !== $this->command_group_name ) {
+			return;
+		}
+
+		// Bail early if the invoked command is not one of the commands that need preparation.
+		if ( ! in_array( $command_name, array( 'check-plugin' ), true ) ) {
+			return;
+		}
+
+		// Bail early if plugin basename cannot be determined.
+		try {
+			$plugin_basename = $this->get_plugin_from_args( array( $plugin_slug ) );
+		} catch ( Exception $e ) {
+			return;
+		}
+
+		// Create Checks instance and prepare the environment for it.
+		$checks = $this->get_checks_instance( $plugin_basename );
+		add_action(
+			'plugins_loaded',
+			function() use ( $checks ) {
+				$cleanup = $checks->prepare();
+
+				add_action(
+					'shutdown',
+					function() use ( $cleanup ) {
+						$cleanup();
+					}
+				);
+			},
+			1
+		);
+	}
+
+	/**
+	 * Gets the Checks instance to use.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @param string $plugin_basename Plugin basename for the Checks instance.
+	 * @return Checks The Checks instance to use.
+	 */
+	protected function get_checks_instance( $plugin_basename ) {
+		// Use already configured instance for the plugin if available.
+		if ( isset( $this->checks ) && $this->checks->plugin_basename() === $plugin_basename ) {
+			return $this->checks;
+		}
+
+		$this->checks = new Checks(
+			$this->context,
+			WP_PLUGIN_DIR . '/' . $plugin_basename
+		);
+		return $this->checks;
 	}
 }
