@@ -46,26 +46,48 @@ class Activate_Plugin_Preparation implements Preparation {
 	 * @throws Exception Thrown when preparation fails.
 	 */
 	public function prepare() {
-		require_once ABSPATH . 'wp-admin/includes/plugin.php';
-
-		// Activate plugin if not active yet.
-		if ( ! is_plugin_active( $this->plugin_basename ) ) {
-			$result = activate_plugin( $this->plugin_basename, '', false, true );
-			if ( is_wp_error( $result ) ) {
-				throw new Exception(
-					sprintf(
-						/* translators: %s: WP error message */
-						__( 'Could not activate plugin: %s', 'plugin-check' ),
-						$result->get_error_message()
-					)
-				);
-			}
-			return function() {
-				deactivate_plugins( array( $this->plugin_basename ), true );
-			};
+		$plugin = WP_PLUGIN_DIR . '/' . $this->plugin_basename;
+		if ( ! file_exists( $plugin ) ) {
+			throw new Exception(
+				sprintf(
+					/* translators: %s: plugin basename */
+					__( 'Plugin file for %s not found.', 'plugin-check' ),
+					$this->plugin_basename
+				)
+			);
 		}
 
-		// Otherwise do nothing and return no-op cleanup function.
-		return function() {};
+		// Override active plugins.
+		add_filter( 'option_active_plugins', array( $this, 'filter_active_plugins' ) );
+		add_filter( 'default_option_active_plugins', array( $this, 'filter_active_plugins' ) );
+
+		$_wp_plugin_file = $plugin;
+		include_once $plugin;
+		$plugin = $_wp_plugin_file; // Avoid stomping of the $plugin variable in a plugin.
+
+		return function() {
+			remove_filter( 'option_active_plugins', array( $this, 'filter_active_plugins' ) );
+			remove_filter( 'default_option_active_plugins', array( $this, 'filter_active_plugins' ) );
+		};
+	}
+
+	/**
+	 * Filters the active plugins option to ensure the plugin is active.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @param array|mixed $active_plugins List of active plugin basenames.
+	 * @return array Modified value of $active_plugins.
+	 */
+	public function filter_active_plugins( $active_plugins ) {
+		if ( ! is_array( $active_plugins ) ) {
+			return array( $this->plugin_basename );
+		}
+
+		if ( ! in_array( $this->plugin_basename, $active_plugins, true ) ) {
+			$active_plugins[] = $this->plugin_basename;
+		}
+
+		return $active_plugins;
 	}
 }
