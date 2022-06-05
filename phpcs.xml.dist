@@ -17,7 +17,7 @@
 
 	<file>./plugin-check.php</file>
 	<file>./includes</file>
-	<file>./themes</file>
+	<file>./test-content</file>
 
 	<!-- Do not apply I18n rules for test themes -->
 	<rule ref="WordPress.WP.I18n">
